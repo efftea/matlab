@@ -1,0 +1,228 @@
+% Правила нечеткого вывода
+rules = [
+    [1, 1, 1, 1, 1],
+    [1, 1, 1, 3, 1],
+    [1, 1, 1, 2, 1],
+    [1, 1, 2, 1, 1],
+    [1, 1, 2, 3, 1],
+    [1, 1, 2, 2, 1],
+    [1, 2, 2, 1, 2],
+    [1, 2, 2, 3, 3],
+    [1, 2, 2, 2, 3],
+    [1, 3, 2, 1, 2],
+    [1, 3, 2, 3, 3],
+    [1, 3, 2, 2, 4],
+    [2, 1, 2, 1, 1],
+    [2, 1, 2, 3, 1],
+    [2, 1, 2, 2, 1],
+    [2, 2, 1, 1, 2],
+    [2, 2, 1, 3, 3],
+    [2, 2, 1, 2, 4],
+    [2, 3, 3, 1, 2],
+    [2, 3, 3, 3, 3],
+    [2, 3, 3, 2, 4],
+    [3, 3, 3 ,2 ,4],
+    [3 ,1 ,1 ,1 ,1],
+    [3 ,1 ,2 ,1 ,1],
+    [3 ,1 ,3 ,2 ,1],
+    [3 ,1 ,3 ,3 ,1],
+    [3 ,2 ,1 ,1 ,2],
+    [3 ,2 ,2 ,1 ,2],
+    [3 ,2 ,2 ,3 ,3],
+    [3 ,2 ,2 ,4 ,4], 
+    [3 ,3 ,1 ,1 ,2],
+    [3 ,3 ,1 ,3 ,3],
+    [3 ,3 ,1 ,4 ,4] 
+];
+
+
+inputValues = [145000; 270; 1; 1];
+
+% Проверка агрегации
+maxMinResult = calcAggregationMaxMin(inputValues,[2;2;2;2;2]);
+disp('Степень уверенности (максиминная):');
+disp(maxMinResult);
+
+algResult = calcAggregationAlg(inputValues,[2;3;1;2;4]);
+disp('Степень уверенности (алгебраическая):');
+disp(algResult);
+
+% График агрегации
+x = linspace(0, 1, 1000); % Степень принадлежности входная
+minValues = min(x, x); % Значение для максиминной агрегации (просто x)
+algValues = x.*x; % Значение для алгебраической агрегации
+figure;
+hold on;
+plot(x, minValues, 'r', 'DisplayName', 'maxMin');
+plot(x, algValues, 'b', 'DisplayName', 'Alg');
+xlabel('Степень принадлежности входная');
+ylabel('Результат вычисления условия правила');
+legend;
+title('Сравнение степеней уверенности: максиминная и алгебраическая агрегация');
+grid on; 
+hold off;
+
+% Импликация
+calcMinImplic(inputValues,[2;3;1;2;4],[4;5;6;7]);
+calcProdImplic(inputValues,[2;3;1;2;4],[4;5;6;7]);
+
+% График импликации
+x = linspace(0, 1, 1000); % Степень принадлежности входная
+figure;
+hold on;
+plot(x, min(x, x), 'r', 'DisplayName', 'Min');
+plot(x, x.*x, 'b', 'DisplayName', 'Prod');
+xlabel('Степень принадлежности входная');
+ylabel('Результат вычисления импликации');
+legend;
+grid on;
+
+% Оценка принадлежности
+input =  [145000; 270; 1; 1; 0.95];
+x = linspace(0, 2, 1000); % Избегаем нулей
+figure;
+hold on;
+plot(x,(calcMaxAcc(x,input,rules)),'Color','r','DisplayName','MaxAcc');
+plot(x,(calcSumAcc(x,input,rules)),'Color','b','DisplayName','SumAcc');
+xlabel('Оценка');
+ylabel('Степень принадлежности');
+legend;
+grid on;
+
+% Центроид и биссектор
+bis = calcBissect(x,input,rules);
+centr = calcCentroid(x,input,rules);
+disp('Биссектор:');
+disp(bis);
+disp('Центроид:');
+disp(centr);
+
+figure;
+hold on;
+plot(x,(calcMaxAcc(x,input,rules)),'Color','r');
+plot([bis bis],[0 max(calcMaxAcc(x,input,rules))],'Color','b','DisplayName','Bissector');
+plot([centr centr],[0 max(calcMaxAcc(x,input,rules))],'Color','g','DisplayName','Centroid');
+xlabel('Оценка')
+ylabel('Степень принадлежности')
+legend;
+
+
+function output = calcPrice(x, number)
+    if (number == 1)
+        output = trimf(x, [ 130000, 130000, 140000]);
+    elseif (number == 2)
+        output = trimf(x, [130000, 140000, 150000]);
+    else
+        output = trimf(x, [140000, 150000, 150000]);
+    end
+end
+
+function output = calcExam(x, number)
+ 
+    if (number == 1)
+        output = trapmf(x, [0, 0, 190, 200]);
+    elseif (number == 2)
+        output = trapmf(x, [190, 200, 260, 280]);
+    else
+        output = trapmf(x, [260, 280, 300, 300]);
+    end
+    
+end
+
+function output = calcTime(x, number)
+    if (number == 1)
+        output = trimf(x, [0, 0, 1.5]);
+    elseif (number == 2)
+        output = trimf(x, [0, 1.5, 3]);
+    else
+        output = trimf(x, [1.5, 3, 3]);
+    end
+end
+
+function output = calcSubjects(x, number)
+    if (number == 1)
+        output = trapmf(x, [0, 0, 1, 1]);
+    elseif (number == 2)
+        output = trapmf(x, [1, 1, 2, 2]);
+    else
+        output = trapmf(x, [2, 2, 3, 3]);
+    end
+end
+
+function output = calcFacultet(x, number)
+    if (number == 1)
+        output = trimf(x, [0, 0, 0.25]);
+    elseif (number == 2)
+        output = trapmf(x, [0, 0.25, 0.4, 0.6]);
+    elseif (number == 3)
+        output = trapmf(x, [0.4, 0.6, 0.75, 1]);
+    else
+        output = trimf(x, [0.75, 1, 1]);
+    end
+end
+
+function output = calcAggregationMaxMin(vals, row)
+    output = min(calcPrice(vals(1), row(1)), ...
+                 min(calcExam(vals(2), row(2)), ...
+                 min(calcTime(vals(3), row(3)), ...
+                 calcSubjects(vals(4), row(4)))));
+end
+
+function output = calcAggregationAlg(vals, row)
+    priceValue = calcPrice(vals(1), row(1));
+    examValue = calcExam(vals(2), row(2));
+    timeValue = calcTime(vals(3), row(3));
+    subjectsValue = calcSubjects(vals(4), row(4));
+
+    output = priceValue * examValue * timeValue * subjectsValue;
+end
+
+function output = calcMinImplic(vals, row, outputVal)
+    output = min(calcAggregationMaxMin(vals, row),calcFacultet(outputVal, row(5)));
+end
+
+function output = calcProdImplic(vals, row, outputVal)
+    output = calcFacultet(outputVal, row(5)) .* calcAggregationMaxMin(vals, row);
+end
+
+function output = calcMaxAcc(x, vals, rows)
+    output = 0;
+    for i = 1:length(rows)
+        row = rows(i, :);
+        output = max(calcMinImplic(vals, row, x), output);
+    end
+end
+
+function output = calcSumAcc(x, vals, rows)
+    output = 0;
+    for i = 1:length(rows)
+        row = rows(i, :);
+        output = calcMinImplic(vals, row, x) + output;
+    end
+    output = min(1, output);
+end
+
+function output = calcCentroid(x, input, rules)
+    mf = calcMaxAcc(x, input, rules);
+    numerator = trapz(x, x .* mf);
+    denominator = trapz(x, mf);
+    output = numerator / denominator;
+end
+
+function output = calcBissect(x, input, rules)
+    mf = calcMaxAcc(x, input, rules);
+    totalArea = trapz(x, mf);
+    halfArea = totalArea / 2;
+    currentArea = 0;
+    output = NaN;
+
+    for i = 1:length(x) - 1  % Изменено: до length(x) - 1
+        currentArea = currentArea + trapz(x(i:i + 1), mf(i:i + 1));
+        if currentArea >= halfArea
+            output = x(i);
+            break;
+        end
+    end
+end
+
+
